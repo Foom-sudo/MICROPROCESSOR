@@ -1,5 +1,3 @@
-#MICROPROCESSOR
-
 #include "stm32f4xx.h"
 
 #define TRIG_PIN    (1 << 0)
