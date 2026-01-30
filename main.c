@@ -48,5 +48,3 @@ void EXTI3_IRQHandler(void) {
         EXTI->PR |= (1 << 3);
     }
 }
-
-
