@@ -110,3 +110,42 @@ uint32_t Get_Distance_CM(void) {
     }
     return (count / 58);
 }
+
+int main(void) {
+    Init_All_Hardware();
+
+    for(int i = 0; i < 3; i++) {
+        GPIOB->BSRR = 0x0000F000;         
+        GPIOD->BSRR = BUZZER_PIN;         
+        TIM1->CCR2 = SERVO_MAX;           
+        delay_ms(150);
+        GPIOB->BSRR = 0xF0000000;         
+        GPIOD->BSRR = (BUZZER_PIN << 16); 
+        TIM1->CCR2 = SERVO_MIN;           
+        delay_ms(150);
+    }
+    
+    while(1) {
+        ADC1->CR2 |= ADC_CR2_SWSTART;
+        while(!(ADC1->SR & ADC_SR_EOC));
+        adc_value = ADC1->DR;
+        if(adc_value > 2500) GPIOB->BSRR = 0x0000F000;
+        else GPIOB->BSRR = 0xF0000000;
+
+        uint32_t distance = Get_Distance_CM();
+
+        if (emergency_mode) {
+            GPIOD->BSRR = BUZZER_PIN;
+        } else {
+            if (distance > 0 && distance < 10) { 
+                GPIOD->BSRR = BUZZER_PIN; delay_ms(60);
+                GPIOD->BSRR = (BUZZER_PIN << 16); delay_ms(60);
+            } else {
+                GPIOD->BSRR = (BUZZER_PIN << 16);
+            }
+        }
+
+        TIM1->CCR2 = current_pos;
+        delay_ms(20); 
+    }
+}
